@@ -1,0 +1,14 @@
+{
+  "name": "aerowise-air-quality-assistant",
+  "version": "3.0.0",
+  "private": true,
+  "description": "A 3D air intelligence experience turning modeled forecasts into clear daily choices.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

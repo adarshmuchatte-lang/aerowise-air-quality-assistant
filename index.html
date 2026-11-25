@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050912">
+  <meta name="description" content="AeroWise turns modeled air-quality forecasts into clear, location-aware daily plans.">
+  <title>AeroWise — 3D Air Intelligence OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://air-quality-api.open-meteo.com">
+  <link rel="preconnect" href="https://geocoding-api.open-meteo.com">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="entry-screen" id="entry-screen" aria-hidden="false">
+    <div class="entry-orbit" aria-hidden="true"></div>
+    <div class="entry-content">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <p>PLANETARY AIR INTELLIGENCE</p>
+      <button type="button" id="entry-skip">Enter experience <span>↗</span></button>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="AeroWise home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span><strong>AERO<span>WISE</span></strong><small>3D AIR INTELLIGENCE OS</small></span>
+    </a>
+    <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span></span><span></span></button>
+    <nav class="main-nav" id="main-nav" aria-label="Main navigation">
+      <a href="#overview" class="active">Overview</a>
+      <a href="#instrument">Air instrument</a>
+      <a href="#forecast">Forecast</a>
+      <a href="#protocol">Daily protocol</a>
+      <a href="#home-lab">Home lab</a>
+      <a href="#impact">Impact</a>
+    </nav>
+    <div class="topbar-actions">
+      <span class="data-pill" id="data-status" data-state="loading"><i></i><span id="data-status-text">CONNECTING</span></span>
+      <button class="quiet-icon" id="refresh-button" type="button" aria-label="Retry live air data" title="Retry live data"><span class="refresh-glyph">↻</span></button>
+      <button class="demo-switch" id="show-demo" type="button">DEMO VIEW</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span><span id="today-date">PLANETARY ENVIRONMENTAL TELEMETRY</span></div>
+          <h1>See the air.<br><em>Understand the world.</em></h1>
+          <p class="hero-lede">A living view of the atmosphere above you — translated into clear choices for your day.</p>
+          <form class="location-form" id="location-form">
+            <label for="location-input">SELECT A CITY</label>
+            <div class="location-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <input id="location-input" name="location" value="New Delhi" placeholder="Search any city" autocomplete="off" aria-label="Search for a city">
+              <button id="analyze-button" type="submit">ANALYZE <span>↗</span></button>
+            </div>
+            <div class="search-results" id="search-results" role="listbox" aria-label="City search results" hidden></div>
+          </form>
+          <div class="hero-actions">
+            <button class="location-action" id="use-location" type="button"><span class="crosshair">⌖</span> Use my location</button>
+            <span class="privacy-note">Location is only requested when you choose this.</span>
+            <button class="share-action" id="share-update" type="button">SHARE AIR UPDATE <span>↗</span></button>
+          </div>
+          <div class="hero-meta">
+            <span><b class="meta-dot"></b> MODELED AIR QUALITY</span>
+            <span>OPEN-METEO · GLOBAL FORECAST</span>
+          </div>
+        </div>
+
+        <div class="planet-column">
+          <div class="planet-heading">
+            <span><i class="live-orb"></i> PLANET VIEW</span>
+            <span id="globe-coordinate">28.61° N&nbsp;&nbsp; 77.21° E<span>SELECTED FORECAST GRID</span></span>
+          </div>
+          <div class="planet-stage-wrap">
+            <div class="planet-halo halo-one"></div>
+            <div class="planet-halo halo-two"></div>
+            <div class="planet-stage" id="globe-stage" aria-label="Interactive three-dimensional Earth. Drag to rotate, hold Shift while scrolling to zoom, and select a glowing city marker to load its forecast."></div>
+            <div class="planet-fallback" id="globe-fallback" hidden aria-label="Illustrative two-dimensional planet fallback">
+              <div class="fallback-earth"><div class="fallback-land land-one"></div><div class="fallback-land land-two"></div><div class="fallback-land land-three"></div><div class="fallback-grid"></div><i class="fallback-pin"></i></div>
+              <div class="fallback-stars"></div>
+              <span class="fallback-label">2D PLANET VIEW</span>
+            </div>
+            <div class="planet-info">
+              <span class="info-kicker"><i class="live-orb"></i> SELECTED LOCATION</span>
+              <strong id="globe-city">New Delhi</strong>
+              <span id="globe-air-label">Waiting for verified forecast</span>
+            </div>
+            <button class="globe-reset" id="globe-reset" type="button" title="Reset planet view" aria-label="Reset planet view">⟳</button>
+            <div class="orbit-label label-north">N 28°36′</div>
+            <div class="orbit-label label-south">ATMOSPHERE / 3D</div>
+          </div>
+          <div class="globe-tools">
+            <div class="globe-modebar" role="group" aria-label="Planet visualization modes">
+              <button type="button" data-globe-mode="earth" class="active" aria-pressed="true">PLANET</button>
+              <button type="button" data-globe-mode="particles" aria-pressed="false">AIR FIELD</button>
+              <button type="button" data-globe-mode="cities" aria-pressed="false">CITIES</button>
+              <button type="button" data-globe-mode="forecast" aria-pressed="false">FORECAST</button>
+              <button type="button" data-globe-mode="grid" aria-pressed="false">LAYERS</button>
+            </div>
+            <span class="globe-caption" id="globe-caption">ATMOSPHERE / STYLIZED EARTH</span>
+          </div>
+          <p class="visual-note">Visual effects are illustrative. City points show forecast locations, not monitoring stations or measured pollution plumes.</p>
+        </div>
+      </div>
+      <a class="scroll-cue" href="#instrument"><span></span> SCROLL TO YOUR AIR SIGNAL</a>
+    </section>
+
+    <section class="instrument-section section-shell" id="instrument" aria-labelledby="instrument-title">
+      <div class="section-heading">
+        <div><span class="section-index">01 / ATMOSPHERE SIGNAL</span><h2 id="instrument-title">Your air, in focus.</h2></div>
+        <div class="source-stack"><span id="source-label">SOURCE · WAITING</span><span id="updated-at">LAST UPDATE · —</span></div>
+      </div>
+      <div class="state-banner" id="state-banner" role="status" aria-live="polite" hidden>
+        <span class="banner-icon">!</span><span id="state-message"></span>
+        <button id="retry-live" type="button">RETRY LIVE DATA <b>↗</b></button>
+      </div>
+      <div class="instrument-layout">
+        <article class="aqi-instrument" id="aqi-instrument" data-level="unknown">
+          <div class="instrument-topline"><span>COMPOSITE INDEX</span><span id="aqi-scale">AQI</span></div>
+          <div class="gauge-wrap">
+            <div class="aqi-gauge" id="aqi-gauge" role="img" aria-label="Air quality index unavailable"><div><span>INDEX</span><strong id="aqi-value">—</strong><small id="aqi-category">NO READING</small></div></div>
+          </div>
+          <h3 id="air-headline">Waiting for air data</h3>
+          <p id="air-summary">The live forecast will appear here when the location request finishes.</p>
+          <div class="instrument-footer"><span class="source-light"></span><span id="instrument-source">DATA UNAVAILABLE</span><span class="footer-separator">/</span><span id="instrument-city">NEW DELHI</span></div>
+        </article>
+        <div class="pollutant-instrument">
+          <div class="pollutant-heading"><div><span class="section-index">POLLUTANT SPECTRUM</span><h3>What’s in the model.</h3></div><span class="unit-label">CONCENTRATION · µg/m³</span></div>
+          <div class="pollutant-grid">
+            <div class="pollutant-cell" data-pollutant="pm2_5"><span class="pollutant-symbol">PM₂.₅</span><strong id="pm25-value">—</strong><small>FINE PARTICLES</small><div class="mini-meter"><i id="meter-pm25"></i></div></div>
+            <div class="pollutant-cell" data-pollutant="pm10"><span class="pollutant-symbol">PM₁₀</span><strong id="pm10-value">—</strong><small>COARSE PARTICLES</small><div class="mini-meter"><i id="meter-pm10"></i></div></div>
+            <div class="pollutant-cell" data-pollutant="nitrogen_dioxide"><span class="pollutant-symbol">NO₂</span><strong id="no2-value">—</strong><small>NITROGEN DIOXIDE</small><div class="mini-meter"><i id="meter-no2"></i></div></div>
+            <div class="pollutant-cell" data-pollutant="ozone"><span class="pollutant-symbol">O₃</span><strong id="ozone-value">—</strong><small>OZONE</small><div class="mini-meter"><i id="meter-ozone"></i></div></div>
+            <div class="pollutant-cell" data-pollutant="carbon_monoxide"><span class="pollutant-symbol">CO</span><strong id="co-value">—</strong><small>CARBON MONOXIDE</small><div class="mini-meter"><i id="meter-co"></i></div></div>
+            <div class="pollutant-cell" data-pollutant="sulphur_dioxide"><span class="pollutant-symbol">SO₂</span><strong id="so2-value">—</strong><small>SULPHUR DIOXIDE</small><div class="mini-meter"><i id="meter-so2"></i></div></div>
+          </div>
+          <p class="unit-caveat">Each value is a modeled concentration. A missing value stays unavailable; no value is inferred from another pollutant.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="forecast-section section-shell" id="forecast" aria-labelledby="forecast-title">
+      <div class="section-heading">
+        <div><span class="section-index">02 / LOOK AHEAD</span><h2 id="forecast-title">Read the next 12 hours.</h2></div>
+        <div class="forecast-legend"><i></i><span id="chart-legend-label">U.S. AQI</span><small>MODELED FORECAST</small></div>
+      </div>
+      <div class="forecast-panel">
+        <div class="forecast-topline"><span id="forecast-status">Waiting for hourly values</span><span id="forecast-peak">LOWEST POINT · —</span></div>
+        <div class="chart-wrap">
+          <svg class="forecast-chart" id="forecast-chart" viewBox="0 0 1000 250" preserveAspectRatio="none" role="group" aria-label="Interactive hourly air quality forecast"></svg>
+        </div>
+        <div class="chart-ticks" id="chart-ticks"><span>NOW</span><span>—</span><span>—</span><span>—</span><span>—</span><span>—</span></div>
+        <div class="selected-hour" id="selected-hour"><span class="selected-mark"></span><span>SELECT AN HOURLY POINT</span><strong id="selected-hour-value">—</strong><small id="selected-hour-time">—</small></div>
+      </div>
+      <p class="section-footnote">The lowest modeled index is a relative forecast point, not a promise that conditions will be safe for everyone. Follow local public-health advice.</p>
+    </section>
+
+    <section class="protocol-section section-shell" id="protocol" aria-labelledby="protocol-title">
+      <div class="section-heading">
+        <div><span class="section-index">03 / PERSONAL AIR PROTOCOL</span><h2 id="protocol-title">Turn the forecast into a plan.</h2></div>
+        <button class="line-button" id="update-plan" type="button">UPDATE MY PLAN <span>↗</span></button>
+      </div>
+      <div class="preference-strip">
+        <label>HOUSEHOLD
+          <select id="household-select">
+            <option value="general household">General household</option>
+            <option value="household with children">Children at home</option>
+            <option value="household with an older adult">Older adult at home</option>
+            <option value="household with someone sensitive to air quality">Someone sensitive to air quality</option>
+          </select>
+        </label>
+        <label>ROUTINE
+          <select id="routine-select">
+            <option value="mixed routine">Mixed routine</option>
+            <option value="school or campus commute">School or campus commute</option>
+            <option value="office commute by car">Office commute by car</option>
+            <option value="mostly walking or cycling">Walking or cycling</option>
+            <option value="mostly indoors at home">Mostly indoors at home</option>
+          </select>
+        </label>
+        <label class="checkbox-label"><input id="purifier-select" type="checkbox"><span>We have a HEPA purifier</span></label>
+      </div>
+      <p class="recommendation-context" id="recommendation-context" aria-live="polite">Waiting for a verified location forecast before personalizing your plan.</p>
+      <div class="recommendation-grid" id="recommendation-grid">
+        <div class="recommendation-empty"><span class="pulse-dot"></span><p>Your location-aware plan will appear when air data is ready.</p></div>
+      </div>
+      <div class="plan-save-row"><button class="line-button" id="save-plan" type="button" aria-pressed="false">ADD THIS PLAN TO MY DAY <span>↗</span></button><span id="plan-saved-copy">The plan is stored on this device only.</span></div>
+    </section>
+
+    <section class="home-lab-section section-shell" id="home-lab" aria-labelledby="home-lab-title">
+      <div class="section-heading">
+        <div><span class="section-index">04 / INDOOR AIR LAB</span><h2 id="home-lab-title">Tune your room.</h2></div>
+        <span class="concept-label">CONCEPTUAL SCENE · NOT AN INDOOR SENSOR</span>
+      </div>
+      <div class="home-lab-grid">
+        <div class="room-stage" id="room-scene" data-window="closed" data-ventilation="off" data-purifier="off" aria-label="Illustrative 3D room showing a window, ventilation, purifier, desk, and plant">
+          <div class="room-grid"></div>
+          <div class="room-back-wall"><div class="room-window"><div class="window-glass"><span class="window-sky"></span><span class="window-city"></span></div><div class="window-sill"></div><div class="window-frame"></div></div><div class="room-shelf"><i></i><i></i><i></i></div><div class="room-art"><span></span></div></div>
+          <div class="room-floor"></div>
+          <div class="room-desk"><span class="desk-top"></span><span class="desk-leg left"></span><span class="desk-leg right"></span><span class="desk-lamp"></span></div>
+          <div class="room-plant"><i></i><i></i><i></i><i></i><span></span></div>
+          <div class="room-purifier"><span></span><i></i><b>PURIFIER</b></div>
+          <div class="room-airflow"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="room-caption"><span>ROOM STUDY 01</span><span>VISUAL GUIDANCE ONLY</span></div>
+        </div>
+        <div class="home-controls">
+          <span class="section-index">ROOM CONTROLS</span>
+          <h3>Small changes, visible.</h3>
+          <p id="room-guidance">When outdoor air is poor, close windows when that is safe and comfortable. Reduce indoor smoke and ventilate during cooking when possible.</p>
+          <div class="toggle-row"><div><strong>Window</strong><small id="window-state-copy">Closed · outdoor air isolated</small></div><button id="window-toggle" class="toggle-control" type="button" aria-pressed="false" aria-label="Open window"><i></i></button></div>
+          <div class="toggle-row"><div><strong>Ventilation</strong><small id="ventilation-state-copy">Off · no airflow effect shown</small></div><button id="ventilation-toggle" class="toggle-control" type="button" aria-pressed="false" aria-label="Turn ventilation on"><i></i></button></div>
+          <div class="toggle-row"><div><strong>Air purifier</strong><small id="purifier-state-copy">Off · room scene only</small></div><button id="room-purifier-toggle" class="toggle-control" type="button" aria-pressed="false" aria-label="Turn purifier on"><i></i></button></div>
+          <div class="room-checklist" id="room-checklist"><span><i>01</i> Avoid indoor smoke</span><span><i>02</i> Run kitchen exhaust while cooking</span><span><i>03</i> Follow purifier filter guidance</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="impact-section section-shell" id="impact" aria-labelledby="impact-title">
+      <div class="impact-intro">
+        <span class="section-index">05 / CHOICE → IMPACT</span>
+        <h2 id="impact-title">Change one journey.<br><em>See the estimate.</em></h2>
+        <p>Compare direct trip emissions using a simple, editable-distance model. This estimates CO₂e, not a local air-quality change.</p>
+        <span class="impact-scope">ESTIMATE ONLY · NOT A MEASURED OUTCOME</span>
+      </div>
+      <div class="calculator">
+        <div class="calculator-fields">
+          <label>ONE-WAY DISTANCE <span>km</span><input id="trip-distance" type="number" min="0.1" max="500" step="0.1" value="8"></label>
+          <label>RETURN TRIPS / WEEK<input id="trip-count" type="number" min="1" max="30" step="1" value="5"></label>
+          <label>FROM<select id="trip-from"><option value="car">Petrol car · average UK</option><option value="bus">Local bus · average UK</option><option value="active">Walk or cycle</option></select></label>
+          <label>TO<select id="trip-to"><option value="bus">Local bus · average UK</option><option value="active">Walk or cycle</option><option value="car">Petrol car · average UK</option></select></label>
+        </div>
+        <div class="calculator-results">
+          <div><span>BEFORE</span><strong id="emissions-before">—</strong><small>kg CO₂e / week</small></div>
+          <span class="calculator-arrow">→</span>
+          <div><span>AFTER</span><strong id="emissions-after">—</strong><small>kg CO₂e / week</small></div>
+          <div class="savings-result"><span>ESTIMATED SAVING</span><strong id="emissions-saved">—</strong><small>kg CO₂e / week</small></div>
+        </div>
+        <p class="factor-note">UK 2026 default factors: average petrol car 0.16152 kg CO₂e / vehicle-km; average local bus 0.10151 kg CO₂e / passenger-km; walking/cycling 0 direct use-phase. Your local fleet and occupancy can differ. <a href="https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2026" target="_blank" rel="noreferrer">Factor source ↗</a></p>
+      </div>
+    </section>
+
+    <section class="assistant-section section-shell" id="assistant" aria-labelledby="assistant-title">
+      <div class="assistant-heading">
+        <div><span class="section-index">06 / ASK AEROWISE</span><h2 id="assistant-title">A clear answer, in your context.</h2><p>Built-in guidance always works. Optional AI replies use only the selected location, readings, and your routine.</p></div>
+        <span class="assistant-status" id="assistant-status">BUILT-IN GUIDE READY</span>
+      </div>
+      <div class="prompt-chips" role="group" aria-label="Suggested questions">
+        <button type="button" data-ask="Explain PM2.5 in simple terms.">Explain PM2.5</button>
+        <button type="button" data-ask="How should I plan outdoor exercise today?">Plan outdoor exercise</button>
+        <button type="button" data-ask="How can I improve air in my room?">Improve my room air</button>
+        <button type="button" data-ask="Suggest a lower-emission commute.">Suggest a commute</button>
+      </div>
+      <form class="assistant-form" id="assistant-form">
+        <label class="sr-only" for="assistant-question">Ask AeroWise a question</label>
+        <input id="assistant-question" maxlength="800" placeholder="Ask about your air, room, or routine…" autocomplete="off">
+        <button type="submit" id="assistant-send">ASK AEROWISE <span>↗</span></button>
+        <button type="button" class="assistant-reset" id="assistant-reset">RESET</button>
+      </form>
+      <div class="assistant-answer" id="assistant-answer" role="status" aria-live="polite" hidden></div>
+    </section>
+
+    <footer class="page-footer section-shell">
+      <a class="brand footer-brand" href="#overview"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>AERO<span>WISE</span></strong><small>3D AIR INTELLIGENCE OS</small></span></a>
+      <p>Model forecasts are estimates and may differ from street-level conditions. AeroWise is a planning tool, not an official alert or medical service.</p>
+      <span>DATA BY <a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noreferrer">OPEN-METEO</a></span>
+    </footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

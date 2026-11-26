@@ -254,7 +254,7 @@ The repository includes Node test-runner tests for the air-model and server beha
 ### **AEROWISE**
 *Make the invisible easier to understand.*
 
-[Launch the live experience ↗](https://aerowise-air-quality-assistant.vercel.app/) · [Explore the source ↗](https://github.com/adarshmuchatte-lang/aerowise-air-quality-assistant)
+[Launch the live experience ↗](https://aerowise-air-quality-assistant-jpbdsvyn0-adarshmuchatte-9045.vercel.app/) · [Explore the source ↗](https://github.com/adarshmuchatte-lang/aerowise-air-quality-assistant)
 
 <sub>Built for a more informed day. Keep the data honest. Keep the interface alive.</sub>
 
